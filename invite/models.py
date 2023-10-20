@@ -48,7 +48,7 @@ class Invite(BaseModel):
 
     # 员工关联关系
     employee = models.ForeignKey("Employee", related_name="invites", on_delete=models.RESTRICT, verbose_name='邀请人',
-                                 db_column='employee_id')
+                                 to_field='employee_id')
     # 访客姓名
     visitor_name = models.CharField(max_length=20, verbose_name="访客姓名")
     # 访客手机号
