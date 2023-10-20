@@ -98,3 +98,4 @@ Temporary Items
 
 
 .pytest_cache/
+/db.sqlite3
