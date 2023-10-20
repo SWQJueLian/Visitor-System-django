@@ -1,10 +1,13 @@
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
 from common.exceptions.cust_exception import BusinessException
 from common.exceptions.statuscode import GlobalStatusCode
+from common.token_serializer import WxworkTokenObtainPairSerializer
+from invite.models import Employee
 from oauth.tools.wxwork_tools import WXWorkApi
 
 
 def wxwork_get_userinfo(code: str):
-
     wxwork_api = WXWorkApi()
 
     # 1. 获取用户信息
@@ -34,3 +37,24 @@ def wxwork_get_userinfo(code: str):
     }
 
     return ret_data
+
+
+def wxwork_generator_access_token(employee_data):
+    # 创建绑定用户关系
+    # 能获取到data就表示成功了，此时可以颁发一个token一同返回。
+    # 前端后面都需要拿着token来发送请求，然后校验token，返回user对象。
+    # token校验成功的user对象中取出userid,（只信任从token中取出的user_id）
+    try:
+        employee = Employee.objects.get(employee_id=employee_data['userid'])
+    except Employee.DoesNotExist:
+        employee = Employee.objects.create(employee_id=employee_data['userid'], employee_name=employee_data['username'],
+                                           employee_department=employee_data['department_name'])
+
+    # 生成token， payload中携带user_id
+    serializer = WxworkTokenObtainPairSerializer(data={"employee_id": employee.employee_id})
+    try:
+        serializer.is_valid(raise_exception=True)
+    except TokenError as e:
+        raise InvalidToken(e.args[0])
+    else:
+        return serializer.validated_data['access_token']
