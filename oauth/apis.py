@@ -1,5 +1,3 @@
-import logging
-
 from django.conf import settings
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -7,10 +5,7 @@ from rest_framework.views import APIView
 from common.exceptions.cust_exception import BusinessException
 from common.exceptions.statuscode import GlobalStatusCode
 from common.utils import ApiResponse
-from invite.models import Employee
 from oauth.services import wxwork_get_userinfo, wxwork_generator_access_token
-
-log = logging.getLogger('django')
 
 
 class WxWorkOauthURLGenerateApi(APIView):
