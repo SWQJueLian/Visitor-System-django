@@ -98,9 +98,6 @@ class InviteCreateApi(APIView):
     permission_classes = [IsAuthenticated, ]
 
     class InputSerializer(serializers.Serializer):
-        # employee_id = serializers.CharField(required=False, default='SongWeiQuan')
-        # employee_name = serializers.CharField(required=True)
-        # employee_department = serializers.CharField(required=True)
         visitor_name = serializers.CharField(required=True, min_length=2, max_length=20)
         visitor_mobile = serializers.CharField(required=True, min_length=11, max_length=11)
         visitor_num = serializers.IntegerField(required=False, default=1)
@@ -120,13 +117,6 @@ class InviteCreateApi(APIView):
         employee: Employee = request.user
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # data = {
-        #     "employee_id": employee.employee_id,
-        #     "employee_name": employee.employee_name,
-        #     "employee_department": employee.employee_department,
-        #     **serializer.validated_data
-        # }
-        print('111', serializer.validated_data)
         invite = invite_save(employee, serializer.validated_data)
         # 拿到访客手机号，异步发送短信给访客。
         # 这里要等提交完成后才能开始任务，不然可能会出现数据还没创建完，任务就开始了
@@ -171,10 +161,5 @@ class InviteStatusUpdateApi(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.validated_data.pop('password')
         invite_visitor_arrive(invite_id, serializer.validated_data['status'])
-        # 这里一般放apischeduler中、celery异步去执行
-        # 懒得搞了。也很简单...
-        # api = WXWorkApi()
-        # api.send_arrive_markdown_msg(settings.WXWORK_APP_AGENT_ID, invite_get_by_id(invite_id))
-        # 丢，搞一下吧。权当复习...
         transaction.on_commit(lambda: notify_employee.delay(invite_id))
         return ApiResponse()
