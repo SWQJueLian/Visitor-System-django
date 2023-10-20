@@ -16,7 +16,8 @@ from invite.services import (
     invite_get_all,
     invite_get_by_id,
     invite_save,
-    invite_update
+    invite_update,
+    invite_visitor_arrive
 )
 from invite.tasks import send_sms_to_vistor, notify_employee
 
@@ -169,7 +170,7 @@ class InviteStatusUpdateApi(APIView):
         serializer = self.InputSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data.pop('password')
-        invite_update(invite_id, serializer.validated_data)
+        invite_visitor_arrive(invite_id, serializer.validated_data['status'])
         # 这里一般放apischeduler中、celery异步去执行
         # 懒得搞了。也很简单...
         # api = WXWorkApi()

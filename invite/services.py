@@ -39,3 +39,14 @@ def invite_save(employee: Employee, validated_data: dict):
 
 def invite_update(invite_id, validated_data: dict):
     return Invite.objects.filter(id=invite_id).update(**validated_data)
+
+
+def invite_visitor_arrive(invite_id, status):
+    from django.utils.timezone import now
+    from common.exceptions.cust_exception import BusinessException
+    invite = invite_get_by_id(invite_id)
+    if invite.visit_date.date() != now().date():
+        raise BusinessException(detail='来访日期与当前日期不相等')
+    invite.status = status
+    invite.save()
+    return invite
