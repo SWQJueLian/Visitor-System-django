@@ -14,6 +14,7 @@ class BaseAppException(APIException):
     def __init__(self, code_enum: GlobalStatusCode, detail=None, status_code=None):
         """
         初始化业务异常
+
         :param code_enum: 异常代码，请传递全局异常类。
         :param detail: 设置异常信息，不传则使用枚举类中的默认信息。
         :param status_code: 设置HTTP响应状态码，不传默认为400。
