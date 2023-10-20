@@ -16,7 +16,7 @@ from invite.services import (
     invite_get_all,
     invite_get_by_id,
     invite_save,
-    invite_update,
+    invite_update_by_employee,
     invite_visitor_arrive
 )
 from invite.tasks import send_sms_to_vistor, notify_employee
@@ -140,7 +140,7 @@ class InviteUpdateApi(APIView):
     def put(self, request: Request, invite_id):
         serializer = self.InputSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        invite_update(invite_id, serializer.validated_data)
+        invite_update_by_employee(request.user.employee_id, invite_id, serializer.validated_data)
         return ApiResponse()
 
 
