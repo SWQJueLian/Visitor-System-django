@@ -22,7 +22,10 @@ def invite_get_all(filter_data):
         filter_kw.append(Q(visitor_name__icontains=filter_data.get('keyword')) |
                          Q(visitor_mobile__contains=filter_data.get('keyword')))
     # 为了前端体验瀑布流，暂时写死返回5条。
-    return Invite.objects.filter(*filter_kw).order_by("-created_at").all()[:filter_data.get('limit', 20)]
+    return Invite.objects.filter(*filter_kw) \
+               .order_by("-created_at") \
+               .only("id", "visitor_name", "visitor_mobile", "visit_date", "created_at", "status") \
+               .all()[:filter_data.get('limit', 20)]
 
 
 def invite_save(employee: Employee, validated_data: dict):
@@ -37,14 +40,18 @@ def invite_save(employee: Employee, validated_data: dict):
     return invite
 
 
-def invite_update(invite_id, validated_data: dict):
-    return Invite.objects.filter(id=invite_id).update(**validated_data)
+def invite_update_by_employee(employee_id, invite_id, validated_data: dict):
+    return Invite.objects.filter(id=invite_id, employee_id=employee_id).update(**validated_data)
 
 
 def invite_visitor_arrive(invite_id, status):
     from django.utils.timezone import now
     from common.exceptions.cust_exception import BusinessException
-    invite = invite_get_by_id(invite_id)
+    try:
+        invite = Invite.objects.get(pk=invite_id).only('status', 'visit_date')
+    except Invite.DoesNotExist:
+        raise BusinessException()
+
     if invite.visit_date.date() != now().date():
         raise BusinessException(detail='来访日期与当前日期不相等')
     invite.status = status
