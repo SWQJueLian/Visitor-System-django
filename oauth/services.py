@@ -31,9 +31,9 @@ def wxwork_get_userinfo(code: str):
         raise BusinessException(detail='获取用户基本信息department_name出错')
 
     ret_data = {
-        'userid': userid,
-        'department_name': department_name,
-        'username': username
+        'employee_id': userid,
+        'employee_department': department_name,
+        'employee_name': username
     }
 
     return ret_data
@@ -44,11 +44,9 @@ def wxwork_generator_access_token(employee_data):
     # 能获取到data就表示成功了，此时可以颁发一个token一同返回。
     # 前端后面都需要拿着token来发送请求，然后校验token，返回user对象。
     # token校验成功的user对象中取出userid,（只信任从token中取出的user_id）
-    try:
-        employee = Employee.objects.get(employee_id=employee_data['userid'])
-    except Employee.DoesNotExist:
-        employee = Employee.objects.create(employee_id=employee_data['userid'], employee_name=employee_data['username'],
-                                           employee_department=employee_data['department_name'])
+    employee_id = employee_data.pop('employee_id')
+    employee = Employee.objects.get_or_create(employee_id=employee_id,
+                                              defaults={**employee_data})[0]
 
     # 生成token， payload中携带user_id
     serializer = WxworkTokenObtainPairSerializer(data={"employee_id": employee.employee_id})
